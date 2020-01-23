@@ -1,4 +1,4 @@
-package com.labforward.api.core.validation;
+package com.labforward.api.core.domain;
 
 
 public interface Entity {

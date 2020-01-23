@@ -1,6 +1,7 @@
 package com.labforward.api.core.validation;
 
 import com.google.common.base.Preconditions;
+import com.labforward.api.core.domain.Entity;
 import com.labforward.api.core.exception.EntityValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
