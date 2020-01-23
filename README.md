@@ -21,12 +21,18 @@ You need to add a new endpoint to the API to allow users to *update the greeting
 
 ## Implementation
 
+I took advantage of beeing and open-ended task and many changes in the code that how would see the code has to look like.
 
-Request for default greeting:
+Changes:
 
-### GET /hello  sample
+1. Added an repository layer which decoupled data layer from service. Added JPA repository and H2 databse for storing data.
+2. Added DTO for REST apis even entity is is very basic and mapping looks like an code duplication, it decouples user input and data that is exposed to the client and make service layer decoupled.
+3. Renaming from 'hello' -> 'greeting'
 
-response:
+### 1. GET /hello  sample
+Request for default greeting.
+
+response body:
 ```json
 {
     "id": "default",
@@ -35,9 +41,10 @@ response:
 }
 ```
 
-### GET /hello/{id}/ sample 
+### 2. GET /hello/{id}/ sample 
+Request greeting by id.
 
-response:
+response body:
 ```json
 {
     "id": "c2b57a87-bb5f-43d6-95e8-1cb39f87937e",
@@ -46,7 +53,8 @@ response:
 }
 ```
 
-### POST /hello  sample
+### 3. POST /hello  sample
+Create greeting.
 
 request body:
 ```json
@@ -56,7 +64,7 @@ request body:
 }
 ```
 
-response:
+response body:
 ```json
 {
     "id": "b0343212-d57b-42a8-ac63-ab6827e586ea",
@@ -65,9 +73,10 @@ response:
 }
 ```
 
-### PUT /hello/{id} sample
+### 4. PUT /hello/{id} sample
+Update greeting.
 
-request:
+request body:
 ```json
 {
 	"message": "Hello",
@@ -75,7 +84,7 @@ request:
 }
 ```
 
-response:
+response body:
 ```json
 {
     "id": "b0343212-d57b-42a8-ac63-ab6827e586ea",
