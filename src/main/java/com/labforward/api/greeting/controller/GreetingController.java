@@ -1,5 +1,7 @@
 package com.labforward.api.greeting.controller;
 
+import java.util.Optional;
+
 import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -60,10 +62,12 @@ public class GreetingController {
 	}
 
 	@PutMapping(value = "/hello/{id}")
-	public GreetingDTO updateGreeting(@PathVariable String id, @RequestBody GreetingDTO updateRequest) {
-		Greeting greeting = greetingService.updateGreeting(id, GreetingMapper.toEntity(updateRequest))
+	public ResponseEntity<GreetingDTO> updateGreeting(@PathVariable String id, @Valid @RequestBody GreetingDTO updateRequest) {
+		Optional<Greeting> updateGreeting = greetingService.updateGreeting(id, GreetingMapper.toEntity(updateRequest));
+		
+		Greeting greeting = updateGreeting
 				.orElseThrow(() -> new ResourceNotUpdatedException(GREETING_NOT_UPDATED));
 		
-		return GreetingMapper.toDTO(greeting);
+		return new ResponseEntity<GreetingDTO>(GreetingMapper.toDTO(greeting), HttpStatus.ACCEPTED);
 	}
 }
