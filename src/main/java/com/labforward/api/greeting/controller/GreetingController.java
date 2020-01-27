@@ -1,5 +1,7 @@
 package com.labforward.api.greeting.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +52,7 @@ public class GreetingController {
 	}
 
 	@PostMapping(value = "/hello")
-	public ResponseEntity<GreetingDTO> createGreeting(@RequestBody GreetingDTO createRequest) {
+	public ResponseEntity<GreetingDTO> createGreeting(@Valid @RequestBody GreetingDTO createRequest) {
 		Greeting greeting = greetingService.createGreeting(GreetingMapper.toEntity(createRequest))
 				.orElseThrow(() -> new ResourceNotCreatedException(GREETING_NOT_CREATED));
 		

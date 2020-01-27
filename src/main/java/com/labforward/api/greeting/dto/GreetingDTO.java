@@ -3,6 +3,7 @@ package com.labforward.api.greeting.dto;
 import java.util.Locale;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.labforward.api.core.validation.EntityUpdateValidatorGroup;
 
@@ -13,7 +14,7 @@ public class GreetingDTO {
 	@NotEmpty(groups = {EntityUpdateValidatorGroup.class})
 	public String message;
 
-	@NotEmpty
+	@NotNull
 	public Locale language;
 
 	public GreetingDTO() {

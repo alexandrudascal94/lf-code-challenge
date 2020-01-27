@@ -9,6 +9,7 @@ import com.labforward.api.core.domain.ValidationErrorMessage;
 import com.labforward.api.core.exception.BadRequestException;
 import com.labforward.api.core.exception.EntityValidationException;
 import com.labforward.api.core.exception.ResourceNotAccessibleException;
+import com.labforward.api.core.exception.ResourceNotCreatedException;
 import com.labforward.api.core.exception.ResourceNotFoundException;
 import com.labforward.api.core.exception.ServiceUnavailableException;
 import com.labforward.api.core.exception.UnsupportedMediaTypeException;
@@ -45,8 +46,8 @@ import static com.labforward.api.core.validation.BeanValidationUtils.OBJECT_ERRO
 /**
  * Global exception handler
  * <p>
- * Useful for mapping all exception paths / error conditions to
- * the appropriate HTTP Status codes and user-friendly messages
+ * Useful for mapping all exception paths / error conditions to the appropriate
+ * HTTP Status codes and user-friendly messages
  */
 @ControllerAdvice
 public class GlobalControllerAdvice extends ResponseEntityExceptionHandler implements ResponseBodyAdvice<Object> {
@@ -95,16 +96,14 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 
 	/*
 	 * Handler for validation errors
-	 * */
+	 */
 	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
 	@ResponseBody
 	@ExceptionHandler(EntityValidationException.class)
 	public Object entityValidationException(EntityValidationException ex) {
 
-		List<FieldError> fieldErrors = ex.getBindingResult()
-		                                 .getFieldErrors();
-		List<ObjectError> objectErrors = ex.getBindingResult()
-		                                   .getGlobalErrors();
+		List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
+		List<ObjectError> objectErrors = ex.getBindingResult().getGlobalErrors();
 
 		ValidationErrorMessage message = new ValidationErrorMessage(ex.getMessage());
 
@@ -153,15 +152,14 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 		return getApiErrorMessage(e);
 	}
 
-	@Override
 	public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> aClass) {
 		return true;
 	}
 
 	@Override
 	public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType,
-	                              Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest,
-	                              ServerHttpResponse serverHttpResponse) {
+			Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest,
+			ServerHttpResponse serverHttpResponse) {
 
 		if (o instanceof NoContentResponse) {
 			serverHttpResponse.getHeaders().remove(HttpHeaders.CONTENT_TYPE);
@@ -176,7 +174,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 
 	@Override
 	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
-	                                                    HttpStatus status, WebRequest request) {
+			HttpStatus status, WebRequest request) {
 		// return 404 when invalid UUID is provided in request
 		if (ex.getRequiredType().equals(UUID.class)) {
 			return new ResponseEntity<>(GENERIC_NOT_FOUND_MESSAGE, HttpStatus.NOT_FOUND);
@@ -185,19 +183,18 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 	}
 
 	/*
-	 * Override default Spring handling to return details of failed
-	 * validation attempt on request body.
+	 * Override default Spring handling to return details of failed validation
+	 * attempt on request body.
 	 *
 	 * How: the exception is generated when the incoming request body does not
 	 * conform to the expected object
 	 *
-	 * Note: Spring defaults to 400, Bad Request, which is what we want, but we'd like
-	 * to send a message as well
+	 * Note: Spring defaults to 400, Bad Request, which is what we want, but we'd
+	 * like to send a message as well
 	 */
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-	                                                              HttpHeaders headers, HttpStatus status,
-	                                                              WebRequest request) {
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		StringBuilder sb = new StringBuilder();
 		if (ex.getCause() instanceof UnrecognizedPropertyException) {
 			UnrecognizedPropertyException e = (UnrecognizedPropertyException) ex.getCause();
@@ -213,29 +210,26 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 	}
 
 	/*
-	 * Override default Spring handling to return details of failed
-	 * validation attempt on request body.
+	 * Override default Spring handling to return details of failed validation
+	 * attempt on request body.
 	 *
 	 * How: the exception is generated when validation fails on
 	 * an @Valid @RequestBody input to controller.
 	 *
 	 * Note: Spring defaults to 400, Bad Request, which is what we want
 	 *
-	 * "The 400 (Bad Request) status code indicates that the server cannot or
-	 * will not process the request due to something which is perceived to
-	 * be a client error (e.g., malformed request syntax, invalid request
-	 * message framing, or deceptive request routing)."
+	 * "The 400 (Bad Request) status code indicates that the server cannot or will
+	 * not process the request due to something which is perceived to be a client
+	 * error (e.g., malformed request syntax, invalid request message framing, or
+	 * deceptive request routing)."
 	 *
 	 * https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-26#section-6.5.1
 	 */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-	                                                              HttpHeaders headers, HttpStatus status,
-	                                                              WebRequest request) {
-		List<FieldError> fieldErrors = ex.getBindingResult()
-		                                 .getFieldErrors();
-		List<ObjectError> globalErrors = ex.getBindingResult()
-		                                   .getGlobalErrors();
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
+		List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
+		List<ObjectError> globalErrors = ex.getBindingResult().getGlobalErrors();
 
 		ValidationErrorMessage message = new ValidationErrorMessage(MESSAGE_BAD_REQUEST);
 
@@ -250,19 +244,17 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 	}
 
 	private void handleCacheHeaders(ServerHttpResponse serverHttpResponse) {
-		serverHttpResponse.getHeaders()
-		                  .setCacheControl(CacheControl.noCache()
-		                                               .getHeaderValue());
+		serverHttpResponse.getHeaders().setCacheControl(CacheControl.noCache().getHeaderValue());
 	}
 
 	/*
 	 * Global implementation for handling newly created entities
 	 *
-	 * Synchronous object creation:
-	 * HTTP.CREATED (201) is returned along with 'Location' header of new object
+	 * Synchronous object creation: HTTP.CREATED (201) is returned along with
+	 * 'Location' header of new object
 	 *
-	 * Asynchronous result creation:
-	 * HTTP.ACCEPTED (202) is returned along with a 'Location' header to further track the status of the operation
+	 * Asynchronous result creation: HTTP.ACCEPTED (202) is returned along with a
+	 * 'Location' header to further track the status of the operation
 	 */
 	private Object handleObjectCreated(Object o, ServletServerHttpResponse serverHttpResponse) {
 
@@ -271,12 +263,9 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler imple
 			HttpServletResponse servletResponse = serverHttpResponse.getServletResponse();
 
 			// Add location header for new object
-			serverHttpResponse.getHeaders()
-			                  .set(HttpHeaders.LOCATION, creationResponse.getLocation()
-			                                                             .toString());
+			serverHttpResponse.getHeaders().set(HttpHeaders.LOCATION, creationResponse.getLocation().toString());
 
 			servletResponse.setStatus(HttpStatus.CREATED.value());
-
 
 			return creationResponse.getEntity();
 		}

@@ -1,7 +1,6 @@
 package com.labforward.api.greeting.controller;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.labforward.api.common.MVCIntegrationTest;
-import com.labforward.api.core.GlobalControllerAdvice;
 import com.labforward.api.greeting.dto.GreetingDTO;
 
 @AutoConfigureMockMvc
@@ -31,8 +29,8 @@ public class GreetingControllerCreateMethodShould extends MVCIntegrationTest {
 	private static final String HELLO_LUKE = "Hello Luke";
 
 	@Test
-	public void returnsBadRequestWhenMessageMissing() throws Exception {
-		String body = "{}";
+	public void returnUnprocessableRequest_when_MessageMissing() throws Exception {
+		String body = "{\"language\": \"en\"}";
 		mockMvc.perform(post("/hello").content(body)
 		                              .contentType(MediaType.APPLICATION_JSON))
 		       .andExpect(status().isUnprocessableEntity())
@@ -41,15 +39,7 @@ public class GreetingControllerCreateMethodShould extends MVCIntegrationTest {
 	}
 
 	@Test
-	public void returnsBadRequestWhenUnexpectedAttributeProvided() throws Exception {
-		String body = "{ \"tacos\":\"value\" }}";
-		mockMvc.perform(post("/hello").content(body).contentType(MediaType.APPLICATION_JSON))
-		       .andExpect(status().isUnprocessableEntity())
-		       .andExpect(jsonPath("$validationErrors[0].message", containsString(GlobalControllerAdvice.MESSAGE_UNRECOGNIZED_PROPERTY)));
-	}
-
-	@Test
-	public void returnsBadRequestWhenMessageEmptyString() throws Exception {
+	public void returnBadRequest_when_messageEmptyString() throws Exception {
 		GreetingDTO emptyMessage = new GreetingDTO("", Locale.CHINESE);
 		final String body = getGreetingBody(emptyMessage);
 
